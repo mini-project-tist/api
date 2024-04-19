@@ -1,0 +1,41 @@
+from flask import Flask, jsonify
+import requests
+from bs4 import BeautifulSoup
+
+# Create a Flask app
+app = Flask(__name__)
+
+# Define the API endpoint
+@app.route('/api/get-district-counts')
+def get_district_counts():
+    base_url = "https://www.manoramaonline.com/tagresults.html?tag=mo%3Acrime%2Froadaccident&page="
+    districts = ["thiruvananthapuram", "kollam", "pathanamthapuram", "alappuzha",
+                 "kottayam", "idukki", "ernakulam", "thrissur", "palakkad",
+                 "malappuram", "kozhikode", "wayanad", "kannur", "kasaragod"]
+
+    district_counts = {district: 0 for district in districts}
+
+    # Scrape and process data from the website
+    for page_number in range(1, 6):
+        url = base_url + str(page_number)
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, "html.parser")
+            news_titles = soup.find_all('a', class_='cmp-story-list__pretitle')
+
+            for title_tag in news_titles:
+                title = title_tag.get('title')
+
+                # Check if the title contains a district name
+                for district in districts:
+                    if district.lower() in title.lower():
+                        district_counts[district] += 1
+
+    # Return the district counts as JSON
+    return jsonify(district_counts)
+
+# Run the app
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+
