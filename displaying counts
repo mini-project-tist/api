@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect
 import requests
 from bs4 import BeautifulSoup
 
@@ -35,7 +35,11 @@ def get_district_counts():
     # Return the district counts as JSON
     return jsonify(district_counts)
 
+# Define a root endpoint that redirects to the API endpoint
+@app.route('/')
+def root():
+    return redirect('/api/get-district-counts')
+
 # Run the app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
